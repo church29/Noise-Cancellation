@@ -4,15 +4,15 @@ import edu.emory.mathcs.jtransforms.fft.*;
 
 /**
  * Wrapper class for the JTransforms DFT Library.
- * 
+ *
  * Support for both double- and single-precision
  * transforms have been implemented. Single
  * precision is faster, but less precise.
- * 
+ *
  * All functionality from the previous FFT
  * library have also been implemented using
  * the JTransforms library. The tests were
- * essentially the same (with a small 
+ * essentially the same (with a small
  * exception). Results can be seen in the
  * main function.
  */
@@ -21,82 +21,82 @@ public final class FFT_Wrapper
     /*-----------------------------------------
      * LITERAL CONSTANTS:
      * 	    INITIAL_SIZE - initial size of
-     * 	                   the FFT plans 
+     * 	                   the FFT plans
      *---------------------------------------*/
     private final int INITIAL_SIZE = 1;
 
     /*-----------------------------------------
      * GLOBAL VARIABLES:
-     * 	    n           - size of FFT plans 
+     * 	    n           - size of FFT plans
      * 	    d_fft_1d    - double FFT class
      * 	    f_fft_1d    - float FFT class
      *---------------------------------------*/
-    private int             n; 
+    private int             n;
     private DoubleFFT_1D    d_fft_1d;
     private FloatFFT_1D     f_fft_1d;
 
 
     /**
-     * Default constructor for an FFT_Wrapper object. 
-     */	
+     * Default constructor for an FFT_Wrapper object.
+     */
     public FFT_Wrapper()
     {
         reset_fft( INITIAL_SIZE );
-	
+
     }   /* FFT_Wrapper() */
 
 
     /**
      * Non-default constructor for an FFT_Wrapper object.
-     * 
+     *
      * @param size
      *        Estimated size of the input array. This can be anything
      *        at first, so long as it's greater than 0. If the size of
      *        the input arrays change, then the FFT functions will
-     *        automatically resize the FFT plans.  
+     *        automatically resize the FFT plans.
      */
     public FFT_Wrapper( final int size )
     {
         reset_fft( size );
-	
+
     }   /* FFT_Wrapper() */
 
 
     /**
      * This method resets the FFT plans.
-     * 
+     *
      * @param size
-     *        The new size of the FFTs.           
+     *        The new size of the FFTs.
      */
     private void reset_fft( final int size )
     {
         n = size;
-	
+
         f_fft_1d = new FloatFFT_1D( size );
         d_fft_1d = new DoubleFFT_1D( size );
-	
+
     }   /* reset_fft() */
 
 
     /**
-     * Computes 1D forward DFT of real data, and returns the result. 
-     * To get back the original data, use <code>ifft_d</code> on the 
+     * Computes 1D forward DFT of real data, and returns the result.
+     * To get back the original data, use <code>ifft_d</code> on the
      * output of this method.
-     * 
+     *
      * @param in
      * 		  The input array to transform. This can be an array of any size.
-     *        <br /><b>NOTE:</b>This buffer shouldn't contain 
+     *        <br /><b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
+     *
      * @return
      * 	This function returns an array of doubles. The size of the output
      * 	array is twice the size of the original input. Real numbers are
      * 	stored in the first half of the array, and the imaginary parts
      * 	are stored in the second half of the array. I.e.: <br />
      * 	<pre>
-     * 	    a[2*k]   = Re[k], 
+     * 	    a[2*k]   = Re[k],
      * 	    a[2*k+1] = Im[k], 0&lt;=k&lt;n
-     * 	</pre>		 
+     * 	</pre>
      */
     public double [] fft( final double [] in )
     {
@@ -104,14 +104,14 @@ public final class FFT_Wrapper
          * Local Variables:
          * 	    i       - For-loop iterator
          *      in_len  - size of input array
-         *      out	    - output array 
+         *      out	    - output array
          *-----------------------------------*/
          int        i;
          int        in_len = in.length;
          double []  out    = new double[ in.length << 1 ];
 
         /*-------------------------------------
-         * Check whether the size of the 
+         * Check whether the size of the
          * input array matches the size of
          * our FFT plans
          *-----------------------------------*/
@@ -134,29 +134,29 @@ public final class FFT_Wrapper
          *-----------------------------------*/
         d_fft_1d.realForwardFull( out );
         return( out );
-	
+
     }   /* fft() */
 
 
     /**
-     * Computes 1D forward DFT of real data, and returns the result. 
-     * To get back the original data, use <code>ifft_f</code> on the 
+     * Computes 1D forward DFT of real data, and returns the result.
+     * To get back the original data, use <code>ifft_f</code> on the
      * output of this method.
-     * 
+     *
      * @param in
      * 	      The input array to transform. This can be an array of any size.
-     *        <br /><b>NOTE:</b>This buffer shouldn't contain 
+     *        <br /><b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
+     *
      * @return
      * 	This function returns an array of floats. The size of the output
      * 	array is twice the size of the original input. Real numbers are
      * 	stored in the first half of the array, and the imaginary parts
      * 	are stored in the second half of the array. I.e.: <br />
      * 	<pre>
-     * 	    a[2*k]   = Re[k], 
+     * 	    a[2*k]   = Re[k],
      * 	    a[2*k+1] = Im[k], 0&lt;=k&lt;n
-     * 	</pre>		 
+     * 	</pre>
      */
     public float [] fft( final float [] in )
     {
@@ -164,14 +164,14 @@ public final class FFT_Wrapper
          * Local Variables:
          *      i       - for-loop iterator
          *      in_len  - size of input array
-         *      out	    - output array 
+         *      out	    - output array
          *-----------------------------------*/
         int         i;
         int         in_len = in.length;
         float []    out    = new float[ in_len << 1 ];
 
         /*-------------------------------------
-         * Check whether the size of the 
+         * Check whether the size of the
          * input array matches the size of
          * our FFT plans
          *-----------------------------------*/
@@ -194,27 +194,27 @@ public final class FFT_Wrapper
          *-----------------------------------*/
         f_fft_1d.realForwardFull( out );
         return( out );
-	
+
     }   /* fft() */
 
 
     /**
-     * Computes 1D inverse DFT of real data, and returns the result. 
+     * Computes 1D inverse DFT of real data, and returns the result.
      * The physical layout of the input data has to be as follows:<br>
-     * 
+     *
      * <pre>
-     *     a[offa+2*k] = Re[k], 
+     *     a[offa+2*k] = Re[k],
      *     a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * </pre>
-     * 
+     *
      * @param in
      *        Data to transform
-     * 
-     * @return 
+     *
+     * @return
      * 	This function returns an array of floating-point
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
@@ -224,14 +224,14 @@ public final class FFT_Wrapper
          * Local Variables:
          * 	    i       - For-loop iterator
          *      in_len  - size of input array
-         *      out	    - output array 
+         *      out	    - output array
          *-----------------------------------*/
         int         i;
         int         in_len = in.length;
         float []    out    = new float[ in_len ];
 
         /*-------------------------------------
-         * Check whether the size of the 
+         * Check whether the size of the
          * input array matches the size of
          * our FFT plans
          *-----------------------------------*/
@@ -249,33 +249,33 @@ public final class FFT_Wrapper
         }
 
         /*-------------------------------------
-         * Perform inverse transformation, 
+         * Perform inverse transformation,
          * and return the result.
          *-----------------------------------*/
         f_fft_1d.complexInverse( out, true );
-	
+
         return( out );
-	
+
     }   /* ifft() */
 
 
     /**
-     * Computes 1D inverse DFT of real data, and returns the result. 
+     * Computes 1D inverse DFT of real data, and returns the result.
      * The physical layout of the input data has to be as follows:<br>
-     * 
+     *
      * <pre>
-     * 	   a[offa+2*k] = Re[k], 
+     * 	   a[offa+2*k] = Re[k],
      * 	   a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * </pre>
-     * 
+     *
      * @param in
      *        Data to transform
-     * 
-     * @return 
+     *
+     * @return
      * 	This function returns an array of floating-point
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
@@ -285,14 +285,14 @@ public final class FFT_Wrapper
          * Local Variables:
          * 	    i       - For-loop iterator
          *      in_len  - size of input array
-         *      out	    - output array 
+         *      out	    - output array
          *-----------------------------------*/
         int         i;
         int         in_len = in.length;
         double []   out    = new double[ in_len ];
 
         /*-------------------------------------
-         * Check whether the size of the 
+         * Check whether the size of the
          * input array matches the size of
          * our FFT plans
          *-----------------------------------*/
@@ -310,47 +310,47 @@ public final class FFT_Wrapper
         }
 
         /*-------------------------------------
-         * Perform inverse transformation, 
+         * Perform inverse transformation,
          * and return the result.
          *-----------------------------------*/
         d_fft_1d.complexInverse( out, true );
-	
+
         return( out );
-	
+
     }   /* ifft() */
 
 
     /**
      * Computes 1D circular convolution of real data, and returns the result.
      * <br /><b>NOTE:</b>We should probably find a more efficient
-     * algorithm for this. 
-     * 
+     * algorithm for this.
+     *
      * @param x
      *        A buffer. <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     *        
+     *
      * @param y
      * 	      Another buffer <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
-     * @return 
+     *
+     * @return
      * 	This function returns an array of double
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
-    public double [] cconvolve( final double [] x,  final double [] y) 
+    public double [] cconvolve( final double [] x,  final double [] y)
     {
         /*-------------------------------------
          * Local Variables:
          * 	    re    - For-loop iterator
          *      im    - indexing variable
          *      len   - size of input arrays
-         *      fft_x - Fourier transform of x 
+         *      fft_x - Fourier transform of x
          *      fft_y - Fourier transform of y
          *      out   - output array
          *-----------------------------------*/
@@ -365,9 +365,9 @@ public final class FFT_Wrapper
          * Check whether the input arrays are
          * the same size.
          *-----------------------------------*/
-        if( len != y.length ) 
-        { 
-            throw new RuntimeException( "Dimensions don't agree" ); 
+        if( len != y.length )
+        {
+            throw new RuntimeException( "Dimensions don't agree" );
         }
 
         /*-------------------------------------
@@ -387,15 +387,15 @@ public final class FFT_Wrapper
 
         /*-------------------------------------
          * Multiply each component.
-         * 
+         *
          * j = a + bi
          * k = c + di
-         * 
+         *
          * jk = (a + bi)(c + di )
          *    =  ac + bd(i^2) + bci + adi
          *    = (ac - bd) + (ad + bc)i
-         * 
-         * Because of the way JTransforms 
+         *
+         * Because of the way JTransforms
          * formats its output buffers, the
          * imaginary component is directly
          * following its corresponding real
@@ -406,9 +406,9 @@ public final class FFT_Wrapper
         for ( re = 0; re < ( len << 1 ); re += 2 )
         {
             im = re + 1;
-            out[ re ] = ( fft_x[ re ] * fft_y[ re ] ) 
+            out[ re ] = ( fft_x[ re ] * fft_y[ re ] )
                       - ( fft_x[ im ] * fft_y[ im ] );
-            out[ im ] = ( fft_x[ re ] * fft_y[ im ] ) 
+            out[ im ] = ( fft_x[ re ] * fft_y[ im ] )
                       + ( fft_x[ im ] * fft_y[ re ] );
         }
 
@@ -417,41 +417,41 @@ public final class FFT_Wrapper
          * and return the output.
          *-----------------------------------*/
         return( ifft( out ) );
-    
+
     }   /* cconvolve() */
 
 
     /**
      * Computes 1D circular convolution of real data, and returns the result.
      * <br /><b>NOTE:</b>We should probably find a more efficient
-     * algorithm for this. 
-     * 
+     * algorithm for this.
+     *
      * @param x
      *        A buffer. <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     *        
+     *
      * @param y
      *        Another buffer <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
-     * @return 
+     *
+     * @return
      * 	This function returns an array of floating-point
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
-    public float [] cconvolve( final float [] x, final float [] y) 
+    public float [] cconvolve( final float [] x, final float [] y)
     {
         /*-------------------------------------
          * Local Variables:
          * 	    re    - For-loop iterator
          *      im    - indexing variable
          *      len   - size of input arrays
-         *      fft_x - Fourier transform of x 
+         *      fft_x - Fourier transform of x
          *      fft_y - Fourier transform of y
          *      out   - output array
          *-----------------------------------*/
@@ -466,9 +466,9 @@ public final class FFT_Wrapper
          * Check whether the input arrays are
          * the same size.
          *-----------------------------------*/
-        if( len != y.length ) 
-        { 
-            throw new RuntimeException( "Dimensions don't agree" ); 
+        if( len != y.length )
+        {
+            throw new RuntimeException( "Dimensions don't agree" );
         }
 
         /*-------------------------------------
@@ -488,15 +488,15 @@ public final class FFT_Wrapper
 
         /*-------------------------------------
          * Multiply each component.
-         *  
+         *
          * j = a + bi
          * k = c + di
-         * 
+         *
          * jk = (a + bi)(c + di )
          *    =  ac + bd(i^2) + bci + adi
          *    = (ac - bd) + (ad + bc)i
-         * 
-         * Because of the way JTransforms 
+         *
+         * Because of the way JTransforms
          * formats its output buffers, the
          * imaginary component is directly
          * following its corresponding real
@@ -507,9 +507,9 @@ public final class FFT_Wrapper
         for( re = 0; re < ( len << 1 ); re += 2 )
         {
             im = re + 1;
-            out[ re ] = ( fft_x[ re ] * fft_y[ re ] ) 
+            out[ re ] = ( fft_x[ re ] * fft_y[ re ] )
                       - ( fft_x[ im ] * fft_y[ im ] );
-            out[ im ] = ( fft_x[ re ] * fft_y[ im ] ) 
+            out[ im ] = ( fft_x[ re ] * fft_y[ im ] )
                       + ( fft_x[ im ] * fft_y[ re ] );
         }
 
@@ -518,31 +518,31 @@ public final class FFT_Wrapper
          * and return the output.
          *-----------------------------------*/
         return( ifft( out ) );
-    
+
     }   /* cconvolve() */
 
 
     /**
-     * Computes 1D linear convolution of real data, and returns the result. 
+     * Computes 1D linear convolution of real data, and returns the result.
      * <br /><b>NOTE:</b>We should probably find a more efficient
      * algorithm for this. I also don't know why we have a circular
      * convolution function call in a linear convolution algorithm.
-     * 
+     *
      * @param x
      *        A buffer. <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     *        
+     *
      * @param y
      * 	      Another buffer <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
-     * @return 
+     *
+     * @return
      *  This function returns an array of double
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
@@ -559,29 +559,29 @@ public final class FFT_Wrapper
         double []   b = new double[ y.length << 1 ];
 
         /*-------------------------------------
-         * Copy the "x" buffer to the "a" 
-         * buffer and pad the rest of the 
+         * Copy the "x" buffer to the "a"
+         * buffer and pad the rest of the
          * buffer with zeroes.
          *-----------------------------------*/
-        for( i = 0; i < x.length; ++i ) 
-        { 
+        for( i = 0; i < x.length; ++i )
+        {
             a[ i ] = x[ i ];
         }
-        for( i = x.length; i < ( x.length << 1 ); ++i ) 
+        for( i = x.length; i < ( x.length << 1 ); ++i )
         {
             a[ i ] = 0.0;
         }
 
         /*-------------------------------------
-         * Copy the "y" buffer to the "b" 
-         * buffer and pad the rest of the 
+         * Copy the "y" buffer to the "b"
+         * buffer and pad the rest of the
          * buffer with zeroes.
          *-----------------------------------*/
-        for( i = 0; i < y.length; ++i ) 
-        { 
+        for( i = 0; i < y.length; ++i )
+        {
             b[ i ] = y[ i ];
         }
-        for( i = y.length; i < ( y.length << 1 ); ++i ) 
+        for( i = y.length; i < ( y.length << 1 ); ++i )
         {
             b[ i ] = 0.0;
         }
@@ -595,26 +595,26 @@ public final class FFT_Wrapper
 
 
     /**
-     * Computes 1D linear convolution of real data, and returns the result.  
+     * Computes 1D linear convolution of real data, and returns the result.
      * <br /><b>NOTE:</b>We should probably find a more efficient
      * algorithm for this. I also don't know why we have a circular
      * convolution function call in a linear convolution algorithm.
-     * 
+     *
      * @param x
      *        A buffer. <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     *        
+     *
      * @param y
      * 	      Another buffer <br />
-     *        <b>NOTE:</b>This buffer shouldn't contain 
+     *        <b>NOTE:</b>This buffer shouldn't contain
      *        any imaginary values--just real values.
-     * 
-     * @return 
+     *
+     * @return
      * 	This function returns an array of floating-pont
      * 	values. Layout of the output array is as follows: <br />
      * 	<pre>
-     * 	    a[offa+2*k] = Re[k], 
+     * 	    a[offa+2*k] = Re[k],
      * 	    a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * 	</pre>
      */
@@ -631,29 +631,29 @@ public final class FFT_Wrapper
         float []    b = new float[ y.length << 1 ];
 
         /*-------------------------------------
-         * Copy the "x" buffer to the "a" 
-         * buffer and pad the rest of the 
+         * Copy the "x" buffer to the "a"
+         * buffer and pad the rest of the
          * buffer with zeroes.
          *-----------------------------------*/
-        for( i = 0; i < x.length; ++i ) 
-        { 
+        for( i = 0; i < x.length; ++i )
+        {
             a[ i ] = x[ i ];
         }
-        for( i = x.length; i < ( x.length << 1 ); ++i ) 
+        for( i = x.length; i < ( x.length << 1 ); ++i )
         {
             a[ i ] = 0.0f;
         }
 
         /*-------------------------------------
-         * Copy the "y" buffer to the "b" 
-         * buffer and pad the rest of the 
+         * Copy the "y" buffer to the "b"
+         * buffer and pad the rest of the
          * buffer with zeroes.
          *-----------------------------------*/
-        for( i = 0; i < y.length; ++i ) 
-        { 
+        for( i = 0; i < y.length; ++i )
+        {
             b[ i ] = y[ i ];
         }
-        for( i = y.length; i < ( y.length << 1 ); ++i ) 
+        for( i = y.length; i < ( y.length << 1 ); ++i )
         {
             b[ i ] = 0.0f;
         }
@@ -664,21 +664,21 @@ public final class FFT_Wrapper
         return( cconvolve( a, b ) );
 
     }   /* convolve() */
- 
-    
+
+
     /**
      * Prints the contents of a buffer to the screen. As of
      * right now, this function can only correctly print
      * buffers where the data is represented in the
      * following form: <br />
      * <pre>
-     *     a[offa+2*k] = Re[k], 
+     *     a[offa+2*k] = Re[k],
      *     a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * </pre>
-     * 
+     *
      * @param x
      *        A buffer.
-     *        
+     *
      * @param title
      *        A title which will be printed above the
      *        buffer's data table.
@@ -693,7 +693,7 @@ public final class FFT_Wrapper
          *-----------------------------------*/
         int     im;
         double  EPSILON = 1.0E-10;
-    	
+
         /*-------------------------------------
 	     * Print out the table
 	     *-----------------------------------*/
@@ -709,30 +709,30 @@ public final class FFT_Wrapper
             else if( x[ im ] > 0 )
             {
                 System.out.println( x[ i ] + " + " + x[ im ] + "i" );
-            } 
+            }
             else
             {
                 System.out.println( x[ i ] + " - " + -x[ im ] + "i" );
             }
         }
         System.out.println();
-        
+
     }   /* show() */
-    
-    
+
+
     /**
      * Prints the contents of a buffer to the screen. As of
      * right now, this function can only correctly print
      * buffers where the data is represented in the
      * following form: <br />
      * <pre>
-     *     a[offa+2*k] = Re[k], 
+     *     a[offa+2*k] = Re[k],
      *     a[offa+2*k+1] = Im[k], 0&lt;=k&lt;n
      * </pre>
-     * 
+     *
      * @param x
      *        A buffer.
-     *        
+     *
      * @param title
      *        A title which will be printed above the
      *        buffer's data table.
@@ -747,7 +747,7 @@ public final class FFT_Wrapper
          *-----------------------------------*/
         int     im;
         float   EPSILON = 1.0E-10f;
-    	
+
         /*-------------------------------------
          * Print out the table
          *-----------------------------------*/
@@ -763,22 +763,22 @@ public final class FFT_Wrapper
             else if( x[ im ] > 0 )
             {
                 System.out.println( x[ i ] + " + " + x[ im ] + "i" );
-            } 
+            }
             else
             {
                 System.out.println( x[ i ] + " - " + -x[ im ] + "i" );
             }
         }
         System.out.println();
-        
+
     }   /* show() */
-    
-    
+
+
     /*********************************************************************
      *  Test client and sample execution
      *
      *  Output from this FFT implementation:
-     *  
+     *
      *  x
      *  -------------------
      *  -0.03480425839330703
@@ -792,21 +792,21 @@ public final class FFT_Wrapper
 	 *  -0.7581365035668999 + 0.08688005256493803i
 	 *  0.44344407521182005
 	 *  -0.7581365035668999 - 0.08688005256493803i
-	 *  
+	 *
 	 *  z = ifft(y)
 	 *  -------------------
 	 *  -0.03480425839330703
 	 *  0.07910192950176387
 	 *  0.7233322451735928
 	 *  0.1659819820667019
-	 *  
+	 *
 	 *  d = cconv(x)
 	 *  -------------------
 	 *  0.5506798633981853
 	 *  0.23461407150576394
 	 *  -0.016542951108772352
 	 *  0.10288019294318276
-	 *  
+	 *
 	 *  d = conv(x)
 	 *  -------------------
 	 *  0.001211336402308083
@@ -817,10 +817,10 @@ public final class FFT_Wrapper
 	 *  0.24012023949334108
 	 *  0.027550018370790935
 	 *  -3.469446951953614E-17
-     *  
-     *  
+     *
+     *
      *  Output from previous FFT implementation tests:
-     * 
+     *
      *  x
      *  -------------------
      *  -0.03480425839330703
@@ -864,20 +864,20 @@ public final class FFT_Wrapper
      *
      *  As you can see, there are only a few differences between
      *  these two implementations. The most obvious difference
-     *  is that the new implementation says that extremely 
+     *  is that the new implementation says that extremely
      *  small imaginary values are zero. In some ways, this
    	 *  can be seen as more accurate, since, in the case of
    	 *  the inverse transform, you actually get the exact values
    	 *  back if they didn't have imaginary values to begin with.
-   	 *  
+   	 *
    	 *  If you compare the final entry of the convolve() tables,
-   	 *  you'll also notice another small difference: the value 
-   	 *  given by the newer implementation is actually smaller 
+   	 *  you'll also notice another small difference: the value
+   	 *  given by the newer implementation is actually smaller
    	 *  than the result given by the old implementation. This
    	 *  might be attributed to precision issues, but since both
-   	 *  values are extremely small, the difference should be 
+   	 *  values are extremely small, the difference should be
    	 *  negligible.
-   	 *  
+   	 *
      *********************************************************************/
     /*
     public static void main( String[] args )
@@ -885,7 +885,7 @@ public final class FFT_Wrapper
         FFT_Wrapper temp = new FFT_Wrapper();
         double [] data = new double[ 4 ];
         double [] out;
-         
+
         data[ 0 ] = ( -0.03480425839330703 );
         data[ 1 ] = (  0.07910192950176387 );
         data[ 2 ] = (  0.7233322451735928  );
@@ -897,16 +897,16 @@ public final class FFT_Wrapper
             System.out.println( data[ i ] );
         }
         System.out.println();
-         
+
         out = temp.fft(data);
         temp.show(out, "y = fft(x)");
-         
+
         double [] bob = temp.ifft( out );
         temp.show(bob, "z = ifft(y)");
-         
+
         double [] cconv = temp.cconvolve(data, data);
         temp.show(cconv, "d = cconv(x)");
-         
+
         double [] conv = temp.convolve(data, data);
         temp.show(conv, "d = conv(x)");
     }*/	/* main() */

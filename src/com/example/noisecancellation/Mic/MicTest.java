@@ -10,34 +10,34 @@ public class MicTest extends TestCase {
 	{
         testMic = new Mic();
         super.setUp();
-			
+
     }
 
     @Override
-    protected void tearDown() throws Exception 
+    protected void tearDown() throws Exception
     {
         testMic = new Mic();
         super.tearDown();
-	
+
     }
 
-	public void testStart() 
+	public void testStart()
 	{
         testMic.start();
         boolean test = testMic.isRecording();
         testMic.stop();
         assertTrue( "Not Recording", test );
-		
+
     }
 
-    public void testStop() 
+    public void testStop()
     {
         testMic.start();
         testMic.stop();
         assertFalse( "Did not stop", testMic.isRecording() );
     }
-	
-    public void testRestart() 
+
+    public void testRestart()
     {
         testMic.start();
         testMic.stop();
@@ -45,17 +45,17 @@ public class MicTest extends TestCase {
         boolean test = testMic.isRecording();
         testMic.stop();
         assertTrue( "Did not restart", test );
-		
+
     }
 
-    public void testGetRecordData() 
+    public void testGetRecordData()
     {
         testMic.start();
         byte[] test = new byte[ testMic.getSuggestedBufferSize() ];
         byte[] data = testMic.getRecordedData();
         testMic.stop();
         assertFalse("Is not recording data", (data == test));
-		
+
     }
 
 }
