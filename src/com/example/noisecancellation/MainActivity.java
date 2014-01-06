@@ -7,13 +7,13 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ToggleButton;
 
-import com.example.equalizer.Mic.Mic;
+import com.example.noisecancellation.Mic.Mic;
 //import com.example.noisecancellation.fft.*;
 
 public class MainActivity extends Activity
 {
 	private Mic m;
-	
+
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
@@ -30,11 +30,11 @@ public class MainActivity extends Activity
         getMenuInflater().inflate(R.menu.main, menu);
         return( true );
     }
-    
+
     public void onToggleClicked(View view) {
         // Is the toggle on?
         boolean on = ((ToggleButton) view).isChecked();
-        
+
         if (on) {
             m.start();
         } else {

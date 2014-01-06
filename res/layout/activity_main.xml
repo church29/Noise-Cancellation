@@ -12,8 +12,10 @@
         android:id="@+id/togglebutton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textOn="Vibrate on"
-        android:textOff="Vibrate off"
-        android:onClick="onToggleClicked"/>
+        android:layout_centerHorizontal="true"
+        android:layout_centerVertical="true"
+        android:onClick="onToggleClicked"
+        android:textOff="noise cancellation off"
+        android:textOn="noise cancellation on" />
 
 </RelativeLayout>
