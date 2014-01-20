@@ -7,39 +7,88 @@ import android.view.Menu;
 import android.view.View;
 import android.widget.ToggleButton;
 
-import com.example.noisecancellation.Mic.Mic;
-//import com.example.noisecancellation.fft.*;
+import com.example.noisecancellation.MainProcess.MainProcess;
 
 public class MainActivity extends Activity
 {
-	private Mic m;
-
+	private MainProcess work_process;
+	private Thread      t;
+	
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
-        m = new Mic();
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-    }
-
+        
+        /*---------------------------------------
+         * Create a new main process to handle
+         * all of the audio processing
+         *-------------------------------------*/
+        work_process = new MainProcess();
+        t = new Thread( work_process, "work" );
+        t.start();
+        
+    }   /* onCreate() */
 
     @Override
     public boolean onCreateOptionsMenu( Menu menu )
     {
-        // Inflate the menu; this adds items to the action bar if it is present.
+        /*---------------------------------------
+         * Inflate the menu; this adds items 
+         * to the action bar if it is present.
+         *-------------------------------------*/
         getMenuInflater().inflate(R.menu.main, menu);
         return( true );
-    }
+        
+    }   /* onCreateOptionsMenu() */
 
-    public void onToggleClicked(View view) {
-        // Is the toggle on?
+    public void onToggleClicked(View view) 
+    {
+        /*---------------------------------------
+         * Is the toggle on?
+         *-------------------------------------*/
         boolean on = ((ToggleButton) view).isChecked();
 
-        if (on) {
-            m.start();
-        } else {
-        	m.stop();
+        if( on ) 
+        {            
+            /*-----------------------------------
+             * Resume our audio processing
+             *---------------------------------*/
+            work_process.resume();
+        } 
+        else 
+        {        	
+        	/*-----------------------------------
+        	 * Pause our audio processing
+        	 *---------------------------------*/
+        	work_process.pause();
         }
-    }
+        
+    }   /* onToggleClicked() */
+    
+    @Override
+    public void onDestroy()
+    {
+        /*---------------------------------------
+         * Tell the thread to stop processing
+         * audio data and close the thread.
+         *-------------------------------------*/
+        work_process.stopProcessing();
+        try
+        {
+            t.join();
+        }
+        catch( InterruptedException ie )
+        {
+            Log.i( "MainActivity--onToggleClicked()", "Failed to clean up after myself." );
+            throw new RuntimeException( "Unable to clean up after myself" );
+        }
+        
+        /*---------------------------------------
+         * Tell our parent to destroy itself
+         *-------------------------------------*/
+        super.onDestroy();
+        
+    }   /* onDestroy() */
 
-}
+};
