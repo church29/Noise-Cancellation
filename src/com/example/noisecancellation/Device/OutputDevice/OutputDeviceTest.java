@@ -36,16 +36,16 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.open() when the
      * device is closed prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testOpenOnClosedDevice()
     {
-        boolean test;
+        byte test;
         
         test = test_device.open();
         test_device.close();
         
-        assertTrue( "Device was opened", test );
+        assertTrue( "Device was opened", OutputDevice.NO_ERROR == test );
         
     }   /* testOpenOnClosedDevice() */
     
@@ -53,17 +53,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.open() when the
      * device is opened prior to the call.
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_ALREADY_OPEN
      */
     public void testOpenOnOpenDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test = test_device.open();
         test_device.close();
         
-        assertFalse( "Device wasn't created a second time", test );
+        assertTrue( "Device wasn't created a second time", OutputDevice.ERROR_ALREADY_OPEN == test );
     
     }   /* testOpenOnOpenDevice() */
     
@@ -83,16 +83,16 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.close() when the
      * device is opened prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testCloseOnOpenDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test = test_device.close();
         
-        assertTrue( "Device was successfully closed", test );
+        assertTrue( "Device was successfully closed", OutputDevice.NO_ERROR == test );
     
     }   /* testCloseOnOpenDevice() */
     
@@ -100,17 +100,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.close() when the
      * device is closed prior to the call.
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_NO_DEVICE
      */
     public void testCloseOnClosedDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.close();
         test = test_device.close();
         
-        assertFalse( "Device wasn't closed a second time", test );
+        assertTrue( "Device wasn't closed a second time", OutputDevice.ERROR_NO_DEVICE == test );
     
     }   /* testCloseOnClosedDevice() */
     
@@ -131,17 +131,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.start() when the
      * device is opened prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testStartOnOpenDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test = test_device.start();
         test_device.close();
         
-        assertTrue( "Device was started", test );
+        assertTrue( "Device was started", OutputDevice.NO_ERROR == test );
     
     }   /* testStartOnOpenDevice() */
     
@@ -149,17 +149,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.start() when the
      * device is closed prior to the call.
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_NO_DEVICE
      */
     public void testStartOnClosedDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.close();
         test = test_device.start();
         
-        assertFalse( "Device was not stopped", test );
+        assertTrue( "Device was not stopped", OutputDevice.ERROR_NO_DEVICE == test );
     
     }   /* testStartOnClosedDevice() */
     
@@ -168,18 +168,18 @@ public class OutputDeviceTest extends TestCase
      * device is open and has already been
      * started prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testStartOnOpenDevice2x()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.start();
         test = test_device.start();
         test_device.close();
         
-        assertTrue( "Device remained in its start state", test );
+        assertTrue( "Device remained in its start state", OutputDevice.NO_ERROR == test );
     
     }   /* testStartOnOpenDevice2x() */
     
@@ -201,17 +201,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.stop() when the
      * device is opened prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testStopOnOpenDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test = test_device.stop();
         test_device.close();
         
-        assertTrue( "Device was stopped", test );
+        assertTrue( "Device was stopped", OutputDevice.NO_ERROR == test );
     
     }   /* testStopOnOpenDevice() */
     
@@ -219,17 +219,17 @@ public class OutputDeviceTest extends TestCase
      * Tests OutputDevice.stop() when the
      * device is closed prior to the call.
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_NO_DEVICE
      */
     public void testStopOnClosedDevice()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.close();
         test = test_device.stop();
         
-        assertFalse( "Device was not stopped", test );
+        assertTrue( "Device was not stopped", OutputDevice.ERROR_NO_DEVICE == test );
     
     }   /* testStopOnClosedDevice() */
     
@@ -238,18 +238,18 @@ public class OutputDeviceTest extends TestCase
      * device is open and has already been
      * stopped prior to the call.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testStopOnOpenDevice2x()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.stop();
         test = test_device.stop();
         test_device.close();
         
-        assertTrue( "Device remained in its stopped state", test );
+        assertTrue( "Device remained in its stopped state", OutputDevice.NO_ERROR == test );
     
     }   /* testStopOnOpenDevice2x() */
     
@@ -261,11 +261,11 @@ public class OutputDeviceTest extends TestCase
      * Testing the class' ability to restart
      * after the playback has been stopped.
      * <br /><br />
-     * Expected return result: True
+     * Expected return result: NO_ERROR
      */
     public void testRestart()
     {
-        boolean test;
+        byte test;
         
         test_device.open();
         test_device.start();
@@ -274,7 +274,7 @@ public class OutputDeviceTest extends TestCase
         test_device.stop();
         test_device.close();
         
-        assertTrue( "Device was able to restart", test );
+        assertTrue( "Device was able to restart", OutputDevice.NO_ERROR == test );
         
     }   /* testRestart() */
     
