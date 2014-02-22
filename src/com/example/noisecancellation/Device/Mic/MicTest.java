@@ -37,16 +37,16 @@ public class MicTest extends TestCase {
      * open a microphone object when the device
      * is closed prior to calling open().
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testOpenMicClosed()
     {
-        boolean test;
+        byte test;
         
         test = testMic.open();
         testMic.close();
         
-        assertTrue( "Mic was successfully opened", test );
+        assertTrue( "Mic was successfully opened", Mic.NO_ERROR == test );
         
     }   /* testOpenMicClosed() */
     
@@ -56,17 +56,17 @@ public class MicTest extends TestCase {
      * microphone is opened prior to calling
      * open().
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: NO_ERROR
      */
     public void testOpenMicOpen()
     {
-        boolean test;
+        byte test;
         
         testMic.open();
         test = testMic.open();
         testMic.close();
         
-        assertTrue( "Mic is still open", test );
+        assertTrue( "Mic is still open", Mic.NO_ERROR == test );
         
     }   /* testOpenMicOpen() */
     
@@ -85,16 +85,16 @@ public class MicTest extends TestCase {
      * close a microphone object when the device
      * is opened prior to calling close().
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testCloseMicOpen()
     {
-        boolean test;
+        byte test;
         
         testMic.open();
         test = testMic.close();
         
-        assertTrue( "Microphone closed successfully", test );
+        assertTrue( "Microphone closed successfully", Mic.NO_ERROR == test );
         
     }   /* testCloseMicOpen() */
     
@@ -103,17 +103,17 @@ public class MicTest extends TestCase {
      * close a microphone object when the device
      * is already closed prior to the call to close().
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_NO_DEVICE
      */
     public void testCloseMicClosed()
     {
-        boolean test;
+        byte test;
         
         testMic.open();
         testMic.close();
         test = testMic.close();
         
-        assertFalse( "Microphone couldn't be closed", test );
+        assertTrue( "Microphone couldn't be closed", Mic.ERROR_NO_DEVICE == test );
         
     }   /* testCloseMicClosed() */
     
@@ -132,12 +132,12 @@ public class MicTest extends TestCase {
      * start a microphone object when the device
      * is opened prior to calling start().
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
 	public void testStartMicOpen()
 	{
 	    boolean test_recording;
-	    boolean test_start;
+	    byte    test_start;
 	    
 	    testMic.open();
         test_start     = testMic.start();
@@ -145,7 +145,7 @@ public class MicTest extends TestCase {
         testMic.stop();
         testMic.close();
         
-        assertTrue( "Recorder started successfully", test_start );
+        assertTrue( "Recorder started successfully", Mic.NO_ERROR == test_start );
         assertTrue( "Recording", test_recording );
 
     }   /* testStartMicOpen() */
@@ -155,19 +155,19 @@ public class MicTest extends TestCase {
 	 * start a microphone object when the device
 	 * is closed prior to calling start().
 	 * <br /><br />
-	 * Expected return value: False
+	 * Expected return value: ERROR_NO_DEVICE
 	 */
 	public void testStartMicClosed()
     {
         boolean test_recording;
-        boolean test_start;
+        byte    test_start;
         
         testMic.open();
         testMic.close();
         test_start     = testMic.start();
         test_recording = testMic.isRecording();
         
-        assertFalse( "Recorder didn't start successfully", test_start );
+        assertTrue( "Recorder didn't start successfully", Mic.ERROR_NO_DEVICE == test_start );
         assertFalse( "Not recording", test_recording );
 
     }   /* testStartMicClosed() */
@@ -187,12 +187,12 @@ public class MicTest extends TestCase {
      * stop a microphone object when the device
      * is opened prior to calling stop().
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
 	public void testStopMicOpen()
     {
         boolean test_recording;
-        boolean test_stop;
+        byte    test_stop;
         
         testMic.open();
         testMic.start();
@@ -200,7 +200,7 @@ public class MicTest extends TestCase {
         test_recording = testMic.isRecording();
         testMic.close();
         
-        assertTrue( "Recorder stopped successfully", test_stop );
+        assertTrue( "Recorder stopped successfully", Mic.NO_ERROR == test_stop );
         assertFalse( "Not recording", test_recording );
 
     }   /* testStopMicOpen() */
@@ -210,19 +210,19 @@ public class MicTest extends TestCase {
 	 * stop a microphone object when the device
 	 * is already closed prior to calling stop()
 	 * <br /><br />
-	 * Expected return value: False
+	 * Expected return value: ERROR_NO_DEVICE
 	 */
     public void testStopMicClosed()
     {
         boolean test_recording;
-        boolean test_stop;
+        byte    test_stop;
         
         testMic.open();
         testMic.close();
         test_stop      = testMic.stop();
         test_recording = testMic.isRecording();
         
-        assertFalse( "Recorder couldn't stop", test_stop );
+        assertTrue( "Recorder couldn't stop", Mic.ERROR_NO_DEVICE == test_stop );
         assertFalse( "Not recording", test_recording );
 
     }   /* testStopMicClosed() */
@@ -235,11 +235,11 @@ public class MicTest extends TestCase {
      * Tests whether the program is able to 
      * restart the recording process.
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: NO_ERROR
      */
     public void testRestart()
     {
-        boolean test;
+        byte test;
         
         testMic.open();
         testMic.start();
@@ -248,7 +248,7 @@ public class MicTest extends TestCase {
         testMic.stop();
         testMic.close();
         
-        assertTrue( "Did restart", test );
+        assertTrue( "Did restart", Mic.NO_ERROR == test );
 
     }   /* testRestart() */
 
@@ -267,7 +267,7 @@ public class MicTest extends TestCase {
      * get buffer data for a device opened prior
      * to calling _____
      * <br /><br />
-     * Expected return value: True
+     * Expected return value: not ERROR_NO_DEVICE
      */
     public void testGetRecordDataMicOpen()
     {
@@ -282,7 +282,7 @@ public class MicTest extends TestCase {
         testMic.close();
         
         assertFalse( "Recorded data is valid", ( data == not_good ) );
-        assertTrue( "Data was actually read", test >= 0 );
+        assertFalse( "Data was actually read", Mic.ERROR_NO_DEVICE == test );
 
     }   /* testGetRecordDataMicOpen() */
     
@@ -291,7 +291,7 @@ public class MicTest extends TestCase {
      * get buffer data for a device closed prior
      * to calling ____
      * <br /><br />
-     * Expected return value: False
+     * Expected return value: ERROR_NO_DEVICE
      */
     public void testGetRecordDataMicClosed()
     {

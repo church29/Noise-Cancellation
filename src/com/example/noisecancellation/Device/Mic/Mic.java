@@ -14,8 +14,22 @@ public class Mic
     
     /*-----------------------------------------
      * Error codes
+     * 
+     * NO_ERROR        - There were no errors
+     * ERROR_NO_DEVICE - Device hasn't been 
+     *                   created
+     * ERROR_ALREADY_RECORDING 
+     *                 - Device is
+     *                   already recording
+     * ERROR_NOT_INITIALIZED 
+     *                 - Device hasn't
+     *                   been initialized for
+     *                   recording audio
      *---------------------------------------*/
-    public static final byte ERROR_NO_DEVICE = -1;
+    public static final byte NO_ERROR                =  0;
+    public static final byte ERROR_NO_DEVICE         = -1;
+    public static final byte ERROR_ALREADY_RECORDING = -2;
+    public static final byte ERROR_NOT_INITIALIZED   = -3;
     
     /*-----------------------------------------
      * Class Attributes
@@ -26,7 +40,7 @@ public class Mic
     private int	          bytes_read;
     
     /**
-     * Default constructor for an FFT_Wrapper object.
+     * Default constructor for a microphone object.
      */
     public Mic()
     {
@@ -94,11 +108,16 @@ public class Mic
      * This function opens a recording device.
      * 
      * @return
-     *  Returns true if the microphone was 
-     *  successfully opened, and false if 
-     *  the microphone wasn't.  
+     *  Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NOT_INITIALIZED is returned 
+     *        if the device couldn't be initialized</li>
+     *  </ul>  
      */
-    public boolean open()
+    public byte open()
     {
         int buffer_size = getSuggestedBufferSize();
 
@@ -127,10 +146,10 @@ public class Mic
         catch( IllegalStateException ie )
         {
             Log.i("error", "Could not create audio record object");
-            return( false );
+            return( ERROR_NOT_INITIALIZED );
         }
         
-        return( true );
+        return( NO_ERROR );
 
     }   /* open() */
     
@@ -139,19 +158,27 @@ public class Mic
      * This function starts recording audio data.
      *
      * @return
-     *  This function returns true if the microphone
-     *  was able to start recording data and false if
-     *  it isn't. If this returns false, then the
-     *  microphone wasn't initialized properly,
-     *  and it would be suggested that the
-     *  programmer close the device and attempt
-     *  to reopen it.
+     * Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device has not been created yet</li>
+     *    <li>ERROR_ALREADY_RECORDING is returned
+     *        if the device is already recording
+     *        audio (i.e. it has already been started)</li>
+     *  </ul>
+     *  <br/>
+     *  If this function fails, it would be 
+     *  suggested that the programmer close 
+     *  the device and attempt to reopen it.
      */
-    public boolean start()
+    public byte start()
     {
         if( ( null == recorder ) || ( AudioRecord.STATE_UNINITIALIZED == recorder.getState() ) )
         {
-            return( false );
+            return( ERROR_NO_DEVICE );
         }
         
         if( AudioRecord.RECORDSTATE_RECORDING != recorder.getRecordingState() )
@@ -161,10 +188,10 @@ public class Mic
             is_recording = true;
             Log.i( "info", "start............." );
             
-            return( true );
+            return( NO_ERROR );
         }
         
-        return( false );
+        return( ERROR_ALREADY_RECORDING );
 
     }   /* start() */
 
@@ -174,12 +201,21 @@ public class Mic
      * recording audio data.
      * 
      * @return
-     *  Returns true if the function was able to stop
-     *  the microphone from recording and false if it
-     *  wasn't. A likely cause for failure is a poorly
+     * Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device has not been created yet</li>
+     *    <li>ERROR_NOT_INITIALIZED is returned
+     *        if the device hasn't been initialized</li>
+     *  </ul>
+     *  <br/>
+     *  A likely cause for failure is a poorly
      *  initialized microphone object.
      */
-    public boolean stop()
+    public byte stop()
     {
         if( null != recorder )
         {
@@ -188,12 +224,15 @@ public class Mic
                 recorder.stop();
                 is_recording = false;
                 Log.i("info", "stop.............");
-                return( true );
+                return( NO_ERROR );
             }
+            
+            Log.i( "Mic--stop()", "Recorder object not initialized." );
+            return( ERROR_NOT_INITIALIZED );
         }
         
         Log.i("Mic--stop()", "No recorder object, or recorder object not initialized");
-        return( false );
+        return( ERROR_NO_DEVICE );
 
     }   /* stop() */
     
@@ -202,12 +241,21 @@ public class Mic
      * This function closes the microphone
      * 
      * @return
-     *  Returns true if the function was able to close
-     *  the microphone and false if it
-     *  wasn't. A likely cause for failure is a poorly
+     * Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device has not been created yet</li>
+     *    <li>ERROR_NOT_INITIALIZED is returned
+     *        if the device hasn't been initialized</li>
+     *  </ul>
+     *  <br />
+     *  A likely cause for failure is a poorly
      *  initialized microphone object.
      */
-    public boolean close()
+    public byte close()
     {
         if( null != recorder ) 
         {
@@ -216,15 +264,19 @@ public class Mic
                 recorder.stop();
                 recorder.release();
                 recorder = null;
-                return( true );
+                return( NO_ERROR );
             }
+            
+            Log.i( "Mic--close()", "Recorder object not initialized." );
+            return( ERROR_NOT_INITIALIZED );
         }
         
-        Log.i("Mic--close()", "No recorder object, or recorder object not initialized");
-        return( false );
+        Log.i("Mic--close()", "No recorder object");
+        return( ERROR_NO_DEVICE );
 
     }   /* close() */
-       
+     
+    
     /**
      * This function grabs audio data from the
      * recording device.
@@ -245,7 +297,7 @@ public class Mic
     {
         if( ( null == recorder ) || ( AudioRecord.STATE_UNINITIALIZED == recorder.getState() ) )
         {
-            return( ERROR_NO_DEVICE );
+            return( (int)ERROR_NO_DEVICE );
         }
         
         Log.i( "data", "reading recording data.............." );

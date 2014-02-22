@@ -44,7 +44,6 @@ public class MainProcess implements Runnable
         recorded_data = new byte[ n ];
         
         resetBuffers( n );
-        setUp();
         
     }   /* MainProcess() */
     
@@ -80,6 +79,8 @@ public class MainProcess implements Runnable
      */
     public void run()
     {   
+        setUp();
+        
         should_run = true;
         while( should_run )
         {

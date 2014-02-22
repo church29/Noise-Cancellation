@@ -13,6 +13,23 @@ public class OutputDevice
     private static final int DEFAULT_BUFFER_SIZE = 1024;
     
     /*-------------------------------------------
+     * Error codes
+     * 
+     * NO_ERROR              - There were no errors
+     * ERROR_NO_DEVICE       - Device hasn't been created
+     * ERROR_ALREADY_OPEN    - Device is already open
+     * ERROR_NOT_INITIALIZED - Device hasn't
+     *                         been initialized for
+     *                         recording audio
+     * ERROR_BUFFER_ISSUES   - Miscellaneous error for write()
+     *-----------------------------------------*/
+    public static final byte NO_ERROR                =  0;
+    public static final byte ERROR_NO_DEVICE         = -1;
+    public static final byte ERROR_ALREADY_OPEN      = -2;
+    public static final byte ERROR_NOT_INITIALIZED   = -3;
+    public static final byte ERROR_BUFFER_ISSUES     = -4;
+    
+    /*-------------------------------------------
      * Class variables
      *-----------------------------------------*/
     private int           buffer_size;
@@ -34,16 +51,21 @@ public class OutputDevice
      * Opens an output device.
      * 
      * @return
-     *  Returns true if the function successfully opened
-     *  a device. If the device has already been opened,
-     *  then this function returns false.
+     * Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_ALREADY_OPEN is returned 
+     *        if the device is already open</li>
+     *  </ul>
      */
-    public boolean open()
+    public byte open()
     {
         if( null != output_device )
         {
             Log.i( "OutputDevice--open()", "Device is already open" );
-            return( false );
+            return( ERROR_ALREADY_OPEN );
         }
         
         buffer_size = getSuggestedBufferSize();
@@ -71,7 +93,7 @@ public class OutputDevice
                                         AudioTrack.MODE_STREAM );
         Log.i( "OutputDevice--open()", "Device has been created" );
         
-        return( true );
+        return( NO_ERROR );
         
     }   /* open() */
     
@@ -79,20 +101,25 @@ public class OutputDevice
      * Starts audio playback.
      * 
      * @return
-     *  Returns true if the device was able to
-     *  start playing audio data and false if
-     *  it wasn't.
+     * Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device hasn't been created yet</li>
+     *  </ul>
      */
-    public boolean start()
+    public byte start()
     {
         if( null == output_device )
         {
             Log.i( "OutputDevice--start()", "Device not created" );
-            return( false );
+            return( ERROR_NO_DEVICE );
         }
 
         output_device.play();
-        return( true );
+        return( NO_ERROR );
         
     }   /* start() */
     
@@ -103,11 +130,29 @@ public class OutputDevice
      *  A buffer containing audio data
      *  
      * @return
-     *  Returns true if the function was able to write the
-     *  buffer to the output device and false if it wasn't.
+     *  Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device hasn't been created</li>
+     *    <li>ERROR_NOT_INITIALIZED is returned 
+     *        if the device wsn't initialized
+     *        properly</li>
+     *    <li>ERROR_BUFFER_ISSUES is returned
+     *        if there were any other issues
+     *        that occurred while writing to
+     *        the device</li>
+     *  </ul>
      */
-    public boolean write( byte [] buf )
+    public byte write( byte [] buf )
     {
+        if( null == output_device )
+        {
+            return( ERROR_NO_DEVICE );
+        }
+        
         Log.i( "OutputDevice--write()", "Writing data..." );
         int bytes_written = output_device.write( buf, 0, buf.length );
         if( bytes_written != buf.length )
@@ -116,16 +161,16 @@ public class OutputDevice
             if( AudioTrack.ERROR_BAD_VALUE == bytes_written )
             {
                 Log.i( "OutputDevice--write()", "values don't have valid indices" );
-                return( false );
+                return( ERROR_BUFFER_ISSUES );
             }
             else if( AudioTrack.ERROR_INVALID_OPERATION == bytes_written )
             {
                 Log.i( "OutputDevice--write()", "Device wasn't initialized properly" );
-                return( false );
+                return( ERROR_NOT_INITIALIZED );
             }
         }
         
-        return( true );
+        return( NO_ERROR );
         
     }   /* write() */
       
@@ -136,19 +181,25 @@ public class OutputDevice
      * call close().
      * 
      * @return
-     *  Returns true if the function stopped the output and
-     *  false if it wasn't.
+     *  Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE is returned if
+     *        the device hasn't been created yet</li>
+     *  </ul>
      */
-    public boolean stop()
+    public byte stop()
     {
         if( null == output_device )
         {
             Log.i( "OutputDevice--stop()", "Device was never created" );
-            return( false );
+            return( ERROR_NO_DEVICE );
         }
         
         output_device.stop();
-        return( true );
+        return( NO_ERROR );
         
     }   /* stop() */
       
@@ -156,21 +207,27 @@ public class OutputDevice
      * Closes the audio device.
      * 
      * @return
-     *  Returns true if the device was closed,
-     *  and false if it wasn't.
+     *  Returns one of the following error codes:
+     *  <br/><br/>
+     *  <ul>
+     *    <li>NO_ERROR is returned if there 
+     *        were no errors</li>
+     *    <li>ERROR_NO_DEVICE if the device
+     *         hasn't been created yet</li>
+     *  </ul>
      */
-    public boolean close()
+    public byte close()
     {
         if( null == output_device )
         {
             Log.i( "OutputDevice--close()", "Device was never created" );
-            return( false );
+            return( ERROR_NO_DEVICE );
         }
         
         output_device.stop();
         output_device.release();
         output_device = null;
-        return( true );
+        return( NO_ERROR );
         
     }   /* close() */
       
