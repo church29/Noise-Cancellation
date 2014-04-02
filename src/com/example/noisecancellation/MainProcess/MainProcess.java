@@ -120,9 +120,7 @@ public class MainProcess implements Runnable
 
         if( window_data.length != len )
         {
-            throw new RuntimeException( "Window and buffer dimensions don't match. BT-Dub,"
-                                        "this is Mr. Window. Mr. Hanning Window, to be precise."
-                                        " Call me back." );
+            throw new RuntimeException( "Window and buffer dimensions don't match." );
         }
 
         for( i = 0; i < len; ++i )
@@ -139,24 +137,27 @@ public class MainProcess implements Runnable
      * If the short is equal to -32768, which would be
      * greater than max(short) when inverted, we add
      * one to the short.
-     * After that, we conver the short back into
+     * After that, we convert the short back into
      * a little endian 16bit.
+     * 
      * @param buf
      *  Buffer containing audio data
      */
     private void invert( byte [] buf )
     {
-    	short invert;
-    	for (int i = 0; i < buf.length-1; i=i+2) {
-    		invert = (short)((buf[i]<<8) | (buf[1]));
-    		if( invert == -32768) {
-    			invert++;
-    		}
-    		invert = (short)-invert;
-    		buf[i] = (byte)(invert & 0xff);
-    		buf[i+1] = (byte)((invert >> 8) & 0xff);
-    	}
-        //skeleton function
+        int   i;
+        short invert;
+        for( i = 0; i < buf.length - 1; i += 2 ) 
+        {
+            invert = (short)( buf[ i ] | ( (short)buf[ i + 1 ] << 8 ) );
+            if( invert < -Short.MAX_VALUE ) 
+            {
+                invert = -Short.MAX_VALUE;
+            }
+            invert       = (short)(  -invert );
+            buf[ i ]     = (byte) (   invert & 0x00FF );
+            buf[ i + 1 ] = (byte) ( ( invert >>> 8  ) );
+        }
 
     }   /* invert() */
 
@@ -165,7 +166,7 @@ public class MainProcess implements Runnable
      * to the size passed to the procedure from the caller.
      *
      * @param new_size
-     *        The new size of the buffers.
+     *  The new size of the buffers.
      */
     private void resetBuffers( final int new_size )
     {
@@ -186,7 +187,7 @@ public class MainProcess implements Runnable
      * buffers change.
      *
      * @param new_size
-     *        The new size of the cosine lookup table.
+     *  The new size of the cosine lookup table.
      */
     private void resetCosTable( final int new_size )
     {
