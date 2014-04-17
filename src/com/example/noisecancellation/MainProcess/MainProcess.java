@@ -16,7 +16,7 @@ public class MainProcess implements Runnable
     private FFT_Wrapper  fft;
     private boolean      paused;
     boolean              should_run;
-    
+
     /*-----------------------------------------
      * Buffers used by this class.
      *      recorded_data - buffer containing the data
@@ -29,28 +29,28 @@ public class MainProcess implements Runnable
     private byte   [] recorded_data;
     private double [] cos_table;
     private double [] window_data;
-    
+
     /**
      * Default constructor for the audio processing thread
      */
     public MainProcess()
     {
-        m             = new Mic();        
+        m             = new Mic();
         s             = new OutputDevice();
         n             = m.getSuggestedBufferSize();
         fft           = new FFT_Wrapper();
         paused        = true;
         should_run    = false;
         recorded_data = new byte[ n ];
-        
+
         resetBuffers( n );
         setUp();
-        
+
     }   /* MainProcess() */
-    
+
     /**
      * Sets a flag telling the thread that
-     * the audio processing should be 
+     * the audio processing should be
      * temporarily paused.
      */
     public void pause()
@@ -58,9 +58,9 @@ public class MainProcess implements Runnable
         paused = true;
         m.stop();
         s.stop();
-        
+
     }   /* pause() */
-    
+
     /**
      * Sets a flag telling the thread that
      * the audio processing should resume.
@@ -70,16 +70,16 @@ public class MainProcess implements Runnable
         m.start();
         s.start();
         paused = false;
-        
+
     }   /* resume() */
-    
+
     @Override
     /**
      * The function that the thread will run.
      * Why else would we call it run?
      */
     public void run()
-    {   
+    {
         should_run = true;
         while( should_run )
         {
@@ -90,11 +90,11 @@ public class MainProcess implements Runnable
                  s.write( recorded_data );
             }
         }
-        
+
         tearDown();
-        
+
     }   /* run() */
-    
+
     /**
      * Sets a flag for the processing thread so that
      * it sees that it needs to stop processing
@@ -102,10 +102,10 @@ public class MainProcess implements Runnable
      */
     public void stopProcessing()
     {
-        should_run = false; 
-        
+        should_run = false;
+
     }   /* stopProcessing() */
-    
+
     /**
      * This function attempts to apply a Hanning Window
      * to the provided data.
@@ -120,9 +120,7 @@ public class MainProcess implements Runnable
 
         if( window_data.length != len )
         {
-            throw new RuntimeException( "Window and buffer dimensions don't match. BT-Dub," +
-                                        "this is Mr. Window. Mr. Hanning Window, to be precise." +
-                                        " Call me back." );
+            throw new RuntimeException( "Window and buffer dimensions don't match." );
         }
 
         for( i = 0; i < len; ++i )
@@ -131,31 +129,50 @@ public class MainProcess implements Runnable
         }
 
     }   /* applyWindow() */
-    
+
     /**
      * Inverts the audio obtained from the microphone.
+     * 16 bit pcm is in little endian format
+     * We first convert a 16bit buffer into a short
+     * If the short is equal to -32768, which would be
+     * greater than max(short) when inverted, we add
+     * one to the short.
+     * After that, we convert the short back into
+     * a little endian 16bit.
      * 
      * @param buf
      *  Buffer containing audio data
      */
     private void invert( byte [] buf )
     {
-        //skeleton function
-        
+        int   i;
+        short invert;
+        for( i = 0; i < buf.length - 1; i += 2 ) 
+        {
+            invert = (short)( buf[ i ] | ( (short)buf[ i + 1 ] << 8 ) );
+            if( invert < -Short.MAX_VALUE ) 
+            {
+                invert = -Short.MAX_VALUE;
+            }
+            invert       = (short)(  -invert );
+            buf[ i ]     = (byte) (   invert & 0x00FF );
+            buf[ i + 1 ] = (byte) ( ( invert >>> 8  ) );
+        }
+
     }   /* invert() */
-    
+
     /**
      * Resizes all of the buffers used by this class
      * to the size passed to the procedure from the caller.
      *
      * @param new_size
-     *        The new size of the buffers.
+     *  The new size of the buffers.
      */
     private void resetBuffers( final int new_size )
     {
         n             = new_size;
         window_data   = new double[ new_size ];
-        
+
         resetCosTable( new_size );
 
         System.gc();
@@ -170,7 +187,7 @@ public class MainProcess implements Runnable
      * buffers change.
      *
      * @param new_size
-     *        The new size of the cosine lookup table.
+     *  The new size of the cosine lookup table.
      */
     private void resetCosTable( final int new_size )
     {
@@ -183,7 +200,7 @@ public class MainProcess implements Runnable
             cos_table[ i ] = Math.cos( 2.0 * Math.PI * (double)i / (double)new_size );
         }
 
-    }   /* resetCosTable() */    
+    }   /* resetCosTable() */
 
     /**
      * Sets up the microphone and
@@ -194,9 +211,9 @@ public class MainProcess implements Runnable
     {
         m.open();
         s.open();
-        
+
     }   /* setUp() */
-    
+
     /**
      * Closes the microphone and
      * output device used by
@@ -207,7 +224,7 @@ public class MainProcess implements Runnable
     {
         m.close();
         s.close();
-        
+
     }   /* tearDown() */
 
 };  /* MainProcess */
