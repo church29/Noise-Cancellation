@@ -1,9 +1,15 @@
 package com.example.noisecancellation.MainProcess;
 
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+
+import android.os.AsyncTask;
+import android.os.Build;
 import android.util.Log;
 import com.example.noisecancellation.Device.Mic.Mic;
 import com.example.noisecancellation.Device.OutputDevice.OutputDevice;
-import com.example.noisecancellation.fft.*;
 
 public class MainProcess implements Runnable
 {
@@ -13,22 +19,23 @@ public class MainProcess implements Runnable
     private int          n;
     private Mic          m;
     private OutputDevice s;
-    private FFT_Wrapper  fft;
     private boolean      paused;
     boolean              should_run;
-
+    
+    /*-----------------------------------------
+     * Debug socket stuff for visual depiction
+     * of the waves
+     *---------------------------------------*/
+    private DBGInfo dbg_info;
+    private boolean use_dbg_info;
+    
     /*-----------------------------------------
      * Buffers used by this class.
      *      recorded_data - buffer containing the data
      *                      recorded during the last
      *                      call to getRecordData()
-     *      cos_table     - a cosine lookup table
-     *      window_data   - data obtained from
-     *                      Hanning Window
      *---------------------------------------*/
     private byte   [] recorded_data;
-    private double [] cos_table;
-    private double [] window_data;
 
     /**
      * Default constructor for the audio processing thread
@@ -38,12 +45,20 @@ public class MainProcess implements Runnable
         m             = new Mic();
         s             = new OutputDevice();
         n             = m.getSuggestedBufferSize();
-        fft           = new FFT_Wrapper();
         paused        = true;
         should_run    = false;
         recorded_data = new byte[ n ];
+        
+        /*-----------------------------
+         * Check if we're running
+         * on the simulator
+         *---------------------------*/
+        use_dbg_info = Build.FINGERPRINT.contains( "generic" );
+        if( use_dbg_info )
+        {
+            dbg_info   = new DBGInfo();
+        }
 
-        resetBuffers( n );
         setUp();
 
     }   /* MainProcess() */
@@ -80,14 +95,32 @@ public class MainProcess implements Runnable
      */
     public void run()
     {
+        byte [] old_data = null;
         should_run = true;
         while( should_run )
         {
             if( !paused )
             {
                  m.getRecordData( recorded_data );
+                 if( use_dbg_info )
+                 {
+                     if( null == old_data )
+                     {
+                         old_data = new byte[ recorded_data.length ];
+                     }
+                     for( int i = 0; i < old_data.length; ++i )
+                     {
+                         old_data[ i ] = recorded_data[  i  ];
+                     }
+                 }
+                 
                  invert( recorded_data );
                  s.write( recorded_data );
+                 
+                 if( use_dbg_info )
+                 {
+                     dbg_info.write( old_data, recorded_data );
+                 }
             }
         }
 
@@ -105,30 +138,6 @@ public class MainProcess implements Runnable
         should_run = false;
 
     }   /* stopProcessing() */
-
-    /**
-     * This function attempts to apply a Hanning Window
-     * to the provided data.
-     *
-     * @param buf
-     *  The data to which the Hanning Window will be
-     *  applied.
-     */
-    private void applyWindow( final byte [] buf, final int len )
-    {
-        int i;
-
-        if( window_data.length != len )
-        {
-            throw new RuntimeException( "Window and buffer dimensions don't match." );
-        }
-
-        for( i = 0; i < len; ++i )
-        {
-            window_data[ i ] = buf[ i ] * 0.5 * ( 1.0 - cos_table[ i ] );
-        }
-
-    }   /* applyWindow() */
 
     /**
      * Inverts the audio obtained from the microphone.
@@ -149,58 +158,33 @@ public class MainProcess implements Runnable
         short invert;
         for( i = 0; i < buf.length - 1; i += 2 ) 
         {
-            invert = (short)( buf[ i ] | ( (short)buf[ i + 1 ] << 8 ) );
+            /*-------------------------
+             * If buf[i] is negative,
+             * Java will sign-extend
+             * it when we perform the
+             * bitwise-or. When this
+             * happens, all of the
+             * bits in the most 
+             * significant byte will
+             * be ones, so we need
+             * to get rid of the sign
+             * extension before it can 
+             * hurt us--thus the bitwise-
+             * and cleverly inserted in
+             * the code.
+             *------------------------*/
+            invert = (short)( ( (short)buf[ i ] & 0x000000FF) | ( (short)buf[ i + 1 ] << 8 ) );
             if( invert < -Short.MAX_VALUE ) 
             {
                 invert = -Short.MAX_VALUE;
             }
+            
             invert       = (short)(  -invert );
             buf[ i ]     = (byte) (   invert & 0x00FF );
             buf[ i + 1 ] = (byte) ( ( invert >>> 8  ) );
         }
 
     }   /* invert() */
-
-    /**
-     * Resizes all of the buffers used by this class
-     * to the size passed to the procedure from the caller.
-     *
-     * @param new_size
-     *  The new size of the buffers.
-     */
-    private void resetBuffers( final int new_size )
-    {
-        n             = new_size;
-        window_data   = new double[ new_size ];
-
-        resetCosTable( new_size );
-
-        System.gc();
-
-    }   /* resetBuffers() */
-
-    /**
-     * Resets the cosine lookup table used in the
-     * Hanning Window calculation. Supposedly, this
-     * saves computation time since this only has
-     * to be recalculated if the size of the
-     * buffers change.
-     *
-     * @param new_size
-     *  The new size of the cosine lookup table.
-     */
-    private void resetCosTable( final int new_size )
-    {
-        int i;
-
-        cos_table = new double[ new_size ];
-
-        for( i = 0; i < new_size; ++i )
-        {
-            cos_table[ i ] = Math.cos( 2.0 * Math.PI * (double)i / (double)new_size );
-        }
-
-    }   /* resetCosTable() */
 
     /**
      * Sets up the microphone and
@@ -224,7 +208,162 @@ public class MainProcess implements Runnable
     {
         m.close();
         s.close();
-
+        
+        if( use_dbg_info )
+        {
+            try
+            {
+                dbg_info.stop();
+                Thread.sleep(500);
+            }
+            catch( Exception e )
+            {
+                Log.i( "MainProcess--tearDown()", "Restless thread" );
+            }
+        }
+        
     }   /* tearDown() */
 
 };  /* MainProcess */
+
+/**
+ * Class used for debugging. It's only available for
+ * use in the emulator. It pretty much just writes a
+ * bunch of stuff to a socket.
+ */
+class DBGInfo
+{
+    private static final int SOCK_PORT = 8575;
+    private static final byte [] IP_ADDRESS = { 10, 0, 2, 15 };
+    
+    private volatile byte [] original;
+    private volatile byte [] inverted;
+    private volatile boolean should_stop;
+    private volatile boolean connected;
+    
+    /**
+     * Internal class for an asynchronous task.
+     * 
+     * An exception is triggered if there is
+     * any network stuff happening on the main
+     * thread. The way to get around that is to
+     * create an asynchronous task, so that's
+     * what was done.
+     */
+    private class SockTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground( Void ... voids )
+        {
+            int i;
+            PrintWriter out;
+            ServerSocket server_sock;
+            Socket dbg_sock;
+            
+            try
+            {
+                connected = false;
+                server_sock = new ServerSocket( SOCK_PORT, 1, InetAddress.getByAddress( IP_ADDRESS ) );
+                Log.i( "run()", "Opened socket..." + server_sock.getLocalPort() + 
+                                " " + server_sock.isBound() + " " + server_sock.getLocalSocketAddress() + 
+                                " " + server_sock.getInetAddress());
+                dbg_sock = server_sock.accept();
+                Log.i( "run()", "Accepted socket connection" );
+                out = new PrintWriter( dbg_sock.getOutputStream() );
+            }
+            catch( Exception e)
+            {
+                Log.i( "SocketThread", e.toString() ); 
+                return( null ); 
+            }
+            
+            connected = true;        
+            should_stop = false;
+            
+            while( !should_stop )
+            {
+                if( ( original != null ) && ( inverted != null ) )
+                {
+                    out.printf( "%d\n%d\n", (int)original.length, (int)inverted.length );
+                    for( i = 0; i < original.length; ++i )
+                    {
+                        out.printf( "%d\n", (int)original[ i ] );
+                        out.printf( "%d\n", (int)inverted[ i ] );
+                    }
+                    
+                    original = null;
+                    inverted = null;
+                }
+            }
+            
+            try
+            {
+                out.close();
+                dbg_sock.close();
+                server_sock.close();
+            }
+            catch( Exception e )
+            {
+                Log.i( "Debug thread", "Failed to close sockets" );
+            }
+            
+            return null;
+        }
+    };
+    
+    private SockTask sock_task;
+    
+    /**
+     * Default constructor
+     */
+    public DBGInfo()
+    {
+        original = null;
+        inverted = null;
+        connected = false;
+        should_stop = true;
+        
+        sock_task = new SockTask();
+        sock_task.execute();
+    }
+    
+    /**
+     * Tells the socket task to close
+     */
+    public void stop()
+    {
+        should_stop = true;
+    }
+    
+    /**
+     * Writes data to an array. The array will be
+     * written to the socket at a later time
+     * 
+     * @param orig
+     *  Buffer containing the original signal (directly from Mic)
+     *  
+     * @param inv
+     *  Buffer containing the inverted signal
+     */
+    public void write( byte [] orig, byte [] inv )
+    {
+        if( !connected )
+        {
+            return;
+        }
+        
+        if( ( original != null ) || ( inverted != null ) )
+        {
+            return;
+        }
+        
+        original = new byte[ orig.length ];
+        inverted = new byte[ inv.length ];
+        
+        for( int i = 0; i < original.length; ++i )
+        {    
+            original[ i ] = orig[ i ];
+            inverted[ i ] = inv[ i ];
+        }
+    }
+    
+}
