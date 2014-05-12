@@ -11,9 +11,9 @@ import com.example.noisecancellation.MainProcess.MainProcess;
 
 public class MainActivity extends Activity
 {
-	private MainProcess work_process;
-	private Thread      t;
-	
+	private MainProcess      work_process;
+	private Thread           t;
+		
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
@@ -27,6 +27,11 @@ public class MainActivity extends Activity
         work_process = new MainProcess();
         t = new Thread( work_process, "work" );
         t.start();
+        
+        if( ( savedInstanceState != null ) && ( savedInstanceState.containsKey( "ButtonState" ) ) )
+        {
+            restoreButtonState( savedInstanceState.getBoolean( "ButtonState" ) );
+        }
         
     }   /* onCreate() */
 
@@ -43,14 +48,14 @@ public class MainActivity extends Activity
     }   /* onCreateOptionsMenu() */
 
     public void onToggleClicked(View view) 
-    {
+    {        
         /*---------------------------------------
          * Is the toggle on?
          *-------------------------------------*/
         boolean on = ((ToggleButton) view).isChecked();
-
+        
         if( on ) 
-        {            
+        {
             /*-----------------------------------
              * Resume our audio processing
              *---------------------------------*/
@@ -90,5 +95,30 @@ public class MainActivity extends Activity
         super.onDestroy();
         
     }   /* onDestroy() */
+        
+    @Override
+    public void onSaveInstanceState( Bundle b )
+    {
+        super.onSaveInstanceState( b );
+        ToggleButton btn = (ToggleButton)findViewById( R.id.togglebutton );
+        b.putBoolean( "ButtonState", btn.isChecked() );
+    }
+    
+    @Override
+    public void onRestoreInstanceState( Bundle b )
+    {
+        super.onRestoreInstanceState( b );
+        restoreButtonState( b.getBoolean( "ButtonState" ) ); 
+    }
+    
+    private void restoreButtonState( boolean prev_state )
+    {
+        ToggleButton btn = (ToggleButton)findViewById( R.id.togglebutton );
+        btn.setChecked( prev_state );
+        if( prev_state )
+        {
+            work_process.resume();
+        }
+    }
 
 };
