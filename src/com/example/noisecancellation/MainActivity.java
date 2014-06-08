@@ -18,18 +18,18 @@ import com.example.noisecancellation.MainProcess.MainProcess;
 
 public class MainActivity extends Activity
 {
-	private MainProcess      work_process;
-	private Thread           t;
-	private boolean          headphones_used;
-	private AudioManager     man;
-	private HeadphoneMonitor headmon;
-	private volatile boolean changing_headphone_state;
-	
-	/**
-	 * Private class that makes sure that a
-	 * head set is being used with our app.
-	 */
-	private class HeadphoneMonitor extends BroadcastReceiver {
+    private MainProcess      work_process;
+    private Thread           t;
+    private boolean          headphones_used;
+    private AudioManager     man;
+    private HeadphoneMonitor headmon;
+    private volatile boolean changing_headphone_state;
+    
+    /**
+     * Private class that makes sure that a
+     * head set is being used with our app.
+     */
+    private class HeadphoneMonitor extends BroadcastReceiver {
         @Override
         public void onReceive( Context context, Intent intent )
         {
@@ -100,10 +100,10 @@ public class MainActivity extends Activity
                 }
             }
             
-        }   /* onReceive() */	    
-	};
-	
-    @SuppressWarnings( "deprecation" )
+        }   /* onReceive() */       
+    };
+
+		
     @Override
     protected void onCreate( Bundle savedInstanceState )
     {
@@ -135,6 +135,11 @@ public class MainActivity extends Activity
         
         IntentFilter filter = new IntentFilter( Intent.ACTION_HEADSET_PLUG );
         registerReceiver( headmon, filter );
+        
+        if( ( savedInstanceState != null ) && ( savedInstanceState.containsKey( "ButtonState" ) ) )
+        {
+            restoreButtonState( savedInstanceState.getBoolean( "ButtonState" ) );
+        }
         
     }   /* onCreate() */
 
@@ -215,11 +220,11 @@ public class MainActivity extends Activity
             work_process.resume();
         } 
         else 
-        {        	
-        	/*-----------------------------------
-        	 * Pause our audio processing
-        	 *---------------------------------*/
-        	work_process.pause();
+        {           
+            /*-----------------------------------
+             * Pause our audio processing
+             *---------------------------------*/
+            work_process.pause();
         }
         
     }   /* onToggleClicked() */
@@ -282,5 +287,30 @@ public class MainActivity extends Activity
         super.onResume();
         
     }   /* onResume() */
+        
+    @Override
+    public void onSaveInstanceState( Bundle b )
+    {
+        super.onSaveInstanceState( b );
+        ToggleButton btn = (ToggleButton)findViewById( R.id.togglebutton );
+        b.putBoolean( "ButtonState", btn.isChecked() );
+    }
+    
+    @Override
+    public void onRestoreInstanceState( Bundle b )
+    {
+        super.onRestoreInstanceState( b );
+        restoreButtonState( b.getBoolean( "ButtonState" ) ); 
+    }
+    
+    private void restoreButtonState( boolean prev_state )
+    {
+        ToggleButton btn = (ToggleButton)findViewById( R.id.togglebutton );
+        btn.setChecked( prev_state );
+        if( prev_state )
+        {
+            work_process.resume();
+        }
+    }
 
 };
