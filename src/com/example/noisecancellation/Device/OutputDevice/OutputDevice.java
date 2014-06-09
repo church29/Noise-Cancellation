@@ -29,6 +29,21 @@ public class OutputDevice
         configuration = new Configuration( Configuration.OUTPUT_DEVICE_CONFIGURATION );
         
     }   /* OutputDevice() */
+    
+    /**
+     * Non-default constructor for an output device
+     * 
+     * @param rate
+     *  Sampling rate for the new device
+     */
+    public OutputDevice( int rate )
+    {
+        buffer_size   = 0;
+        output_device = null;
+        configuration = new Configuration( Configuration.OUTPUT_DEVICE_CONFIGURATION );
+        configuration.setSamplingRate( rate );
+        
+    }   /* OutputDevice() */
       
     /**
      * Opens an output device.
@@ -108,11 +123,44 @@ public class OutputDevice
      */
     public boolean write( byte [] buf )
     {
+        if( null == output_device )
+        {
+            return( false );
+        }
+        
         Log.i( "OutputDevice--write()", "Writing data..." );
         int bytes_written = output_device.write( buf, 0, buf.length );
         if( bytes_written != buf.length )
         {
-            Log.i( "OutputDevice--write()", "Buffer wasn't entirely written to output device" );
+            Log.i( "OutputDevice--write()", "Buffer wasn't entirely written to output device "  + bytes_written + " " + buf.length );
+            if( AudioTrack.ERROR_BAD_VALUE == bytes_written )
+            {
+                Log.i( "OutputDevice--write()", "values don't have valid indices" );
+                return( false );
+            }
+            else if( AudioTrack.ERROR_INVALID_OPERATION == bytes_written )
+            {
+                Log.i( "OutputDevice--write()", "Device wasn't initialized properly" );
+                return( false );
+            }
+        }
+        
+        return( true );
+        
+    }   /* write() */
+    
+    public boolean write( short [] buf )
+    {
+        if( null == output_device )
+        {
+            return( false );
+        }
+        
+        Log.i( "OutputDevice--write()", "Writing data..." );
+        int bytes_written = output_device.write( buf, 0, buf.length );
+        if( bytes_written != buf.length )
+        {
+            Log.i( "OutputDevice--write()", "Buffer wasn't entirely written to output device " + bytes_written + " " + buf.length );
             if( AudioTrack.ERROR_BAD_VALUE == bytes_written )
             {
                 Log.i( "OutputDevice--write()", "values don't have valid indices" );
@@ -188,7 +236,7 @@ public class OutputDevice
                                                     configuration.getAudioFormat()    );
         if( DEFAULT_BUFFER_SIZE > min_size )
         {
-            return( DEFAULT_BUFFER_SIZE );
+            //return( DEFAULT_BUFFER_SIZE );
         }
 
         return( min_size );
