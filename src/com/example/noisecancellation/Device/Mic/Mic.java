@@ -1,6 +1,7 @@
 package com.example.noisecancellation.Device.Mic;
 
 import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.util.Log;
 
 import com.example.noisecancellation.Device.Configuration;
@@ -52,13 +53,17 @@ public class Mic
                                                      configuration.getAudioFormat()    );
         if( min_size < DEFAULT_BUFFER_SIZE )
         {
-            return( DEFAULT_BUFFER_SIZE );
+            //return( DEFAULT_BUFFER_SIZE );
         }
 
         return( min_size );
 
     }   /* getSuggestedBufferSize() */
 
+    public int getSamplingRate()
+    {
+        return( configuration.getSamplingRate() );
+    }
 
     /**
      * Returns the state of the recorder.
@@ -72,6 +77,11 @@ public class Mic
         return( is_recording );
 
     }   /* isRecording() */
+    
+    public int getRate()
+    {
+        return( configuration.getSamplingRate() );
+    }
 
 
     /**
@@ -89,6 +99,57 @@ public class Mic
 
     }   /* getBytesLastRead() */
 
+    public static Configuration getOptimalConfiguration()
+    {
+        Configuration opt = new Configuration();
+        AudioRecord temp = null;
+        int [] sample_rates = { 8000, 11025, 16000, 22050, 44100, 48000, 50000, 50400, 88200, 96000 };
+        int best_rate = 8000;
+        int buffer_size;
+        boolean done = false;
+        
+        for( int i : sample_rates )
+        {
+            try
+            {
+                buffer_size = AudioRecord.getMinBufferSize( i, opt.getChannelConfig(), opt.getAudioFormat() );
+                if( buffer_size != AudioTrack.ERROR_BAD_VALUE )
+                {    
+                    temp = new AudioRecord( opt.getAudioSource(),
+                                            i,
+                                            opt.getChannelConfig(),
+                                            opt.getAudioFormat(),
+                                            buffer_size );
+                    if( temp.getState() == AudioTrack.STATE_INITIALIZED )
+                    {
+                        best_rate = i;
+                    }
+                }
+            }
+            catch( Exception e )
+            {
+                done = true;
+                Log.i( "Mic--getOptimalConfiguration()", "Sample rate of " + i + " is not supported" );
+            }
+            finally
+            {
+                if( null != temp )
+                {
+                    temp.release();
+                    temp = null;
+                    
+                }
+            }
+            
+            if( done )
+            {
+                break;
+            }
+        }
+        
+        opt.setSamplingRate( best_rate );
+        return( opt );
+    }
     
     /**
      * This function opens a recording device.
@@ -99,9 +160,16 @@ public class Mic
      *  the microphone wasn't.  
      */
     public boolean open()
-    {
-        int buffer_size = getSuggestedBufferSize();
-
+    {  
+        int buffer_size;
+        
+        Configuration opt = getOptimalConfiguration();
+        configuration.setSamplingRate( opt.getSamplingRate() );
+        configuration.setChannelConfig( opt.getChannelConfig() );
+        buffer_size = getSuggestedBufferSize();
+        opt = null;
+        Log.i("Best Configuration", "Rate: " + configuration.getSamplingRate() + " Size: " + buffer_size );
+        
         try
         {
             if( null == recorder )
